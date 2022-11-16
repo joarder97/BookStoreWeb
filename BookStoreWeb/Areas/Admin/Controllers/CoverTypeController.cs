@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace BookStoreWeb.Controllers
+namespace BookStoreWeb.Areas.Admin.Controllers
 {
+    [Area("Admin")]
     public class CoverTypeController : Controller
     {
         public IActionResult Index()
