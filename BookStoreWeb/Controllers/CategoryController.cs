@@ -37,7 +37,7 @@ namespace BookStoreWeb.Controllers
             if (ModelState.IsValid)
             {
                 _unitOfWork.Category.Add(obj);
-                _unitOfWork.save();
+                _unitOfWork.Save();
                 TempData["Success"] = "Category Created Successfully";
                 return RedirectToAction("Index");
             }
@@ -72,7 +72,7 @@ namespace BookStoreWeb.Controllers
             if (ModelState.IsValid)
             {
                 _unitOfWork.Category.Update(obj);
-                _unitOfWork.save();
+                _unitOfWork.Save();
                 TempData["Success"] = "Category Edited Successfully";
                 return RedirectToAction("Index");
             }
@@ -105,7 +105,7 @@ namespace BookStoreWeb.Controllers
                 return NotFound();
             }
             _unitOfWork.Category.Remove(obj);
-            _unitOfWork.save();
+            _unitOfWork.Save();
             TempData["Success"] = "Category Deleted Successfully";
             return RedirectToAction("Index");
         }
