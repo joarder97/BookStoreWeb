@@ -10,16 +10,17 @@ namespace BookStoreWeb.Areas.Admin.Controllers
     public class ProductController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public ProductController(IUnitOfWork unitOfWork)
+        public ProductController(IUnitOfWork unitOfWork, IWebHostEnvironment hostEnvironment)
         {
             _unitOfWork = unitOfWork;
+            _webHostEnvironment = hostEnvironment;
         }
 
         public IActionResult Index()
         {
-            IEnumerable<Product> objProductsList = _unitOfWork.Product.GetAll();
-            return View(objProductsList);
+            return View();
         }
 
         //GET
@@ -54,13 +55,28 @@ namespace BookStoreWeb.Areas.Admin.Controllers
         //POST
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Upsert(CoverType obj)
+        public IActionResult Upsert(ProductVM obj, IFormFile? file)
         {
+            string wwwRootPath = _webHostEnvironment.WebRootPath;
+
             if (ModelState.IsValid)
             {
-                _unitOfWork.CoverType.Update(obj);
+                if (file != null)
+                {
+                    string fileName = Guid.NewGuid().ToString();
+                    var uploads = Path.Combine(wwwRootPath, @"images\products");
+                    var extenstion = Path.GetExtension(file.FileName);
+
+                    using (var fileStreams = new FileStream(Path.Combine(uploads, fileName + extenstion), FileMode.Create))
+                    {
+                        file.CopyTo(fileStreams);
+                    }
+                    obj.product.ImageUrl = @"\images\products\" + fileName + extenstion;
+                }
+
+                _unitOfWork.Product.Add(obj.product);
                 _unitOfWork.Save();
-                TempData["Success"] = "Cover Type Edited Successfully";
+                TempData["Success"] = "Product Created Successfully";
                 return RedirectToAction("Index");
             }
             return View(obj);
@@ -96,5 +112,16 @@ namespace BookStoreWeb.Areas.Admin.Controllers
             TempData["Success"] = "Cover Type Deleted Successfully";
             return RedirectToAction("Index");
         }
+
+        #region API CALLS
+
+        [HttpGet]
+        public IActionResult GetAll()
+        {
+            var productList = _unitOfWork.Product.GetAll(includeProperties: "Category");
+            return Json(new { data = productList });
+        }
+
+        #endregion
     }
 }
