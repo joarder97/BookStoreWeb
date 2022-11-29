@@ -47,9 +47,9 @@ namespace BookStoreWeb.Areas.Admin.Controllers
             }
             else
             {
-
+                productVM.product = _unitOfWork.Product.GetFirstOrDefault(u => u.Id == id);
+                return View(productVM);
             }
-            return View(productVM);
         }
 
         //POST
@@ -67,6 +67,15 @@ namespace BookStoreWeb.Areas.Admin.Controllers
                     var uploads = Path.Combine(wwwRootPath, @"images\products");
                     var extenstion = Path.GetExtension(file.FileName);
 
+                    if(obj.product.ImageUrl != null)
+                    {
+                        var oldImagePath = Path.Combine(wwwRootPath, obj.product.ImageUrl.TrimStart('\\'));
+                        if (System.IO.File.Exists(oldImagePath))
+                        {
+                            System.IO.File.Delete(oldImagePath);
+                        }
+                    }
+
                     using (var fileStreams = new FileStream(Path.Combine(uploads, fileName + extenstion), FileMode.Create))
                     {
                         file.CopyTo(fileStreams);
@@ -74,7 +83,14 @@ namespace BookStoreWeb.Areas.Admin.Controllers
                     obj.product.ImageUrl = @"\images\products\" + fileName + extenstion;
                 }
 
-                _unitOfWork.Product.Add(obj.product);
+                if (obj.product.Id == 0)
+                {
+                    _unitOfWork.Product.Add(obj.product);
+                }
+                else
+                {
+                    _unitOfWork.Product.Update(obj.product);
+                }
                 _unitOfWork.Save();
                 TempData["Success"] = "Product Created Successfully";
                 return RedirectToAction("Index");
