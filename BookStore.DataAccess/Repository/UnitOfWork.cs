@@ -26,7 +26,7 @@ namespace BookStore.DataAccess.Repository
 
         }
 
-        public IOrderHeaderRepository Category { get; private set; }
+        public ICategoryRepository Category { get; private set; }
 
         public ICoverTypeRepository CoverType { get; private set; }
 
